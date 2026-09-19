@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="TACC: Target-Aware Carrier Compression for Scalable Novel View Synthesis. Anonymous project page." />
+    <title>TACC: Target-Aware Carrier Compression</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="jumbotron">
+      <div class="hero-content">
+        <h1><span class="accent">TACC:</span> <span class="accent-blue">Target-Aware Carrier Compression</span> for<br /><span class="accent-pink">Scalable</span> Novel View Synthesis</h1>
+        <hr />
+        <p class="authors">Anonymous authors</p>
+        <p class="affiliation">Paper under double-blind review</p>
+        <nav class="resource-buttons" aria-label="Project resources">
+          <span class="resource-button">▰ Paper <small>coming soon</small></span>
+          <span class="resource-button">⌨ Code <small>private draft</small></span>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <section id="tldr" class="paper-section">
+        <h2>TL;DR</h2>
+        <p>TACC decouples reusable source-side Carrier organization from target-conditioned evidence allocation for scalable feed-forward latent novel view synthesis.</p>
+        <figure class="project-figure">
+          <img src="./assets/tacc-figure1.png" alt="TACC teaser showing target-aware Carrier readout and target-time scaling on LagerNVS and LVSM" />
+          <figcaption><strong>Figure 1:</strong> TACC organizes source representations into reusable per-view Carrier frontiers and performs target-aware readout under a fixed decoder-visible budget once the target becomes available. Across LagerNVS and LVSM, TACC maintains efficient target-time rendering as the number of source views increases, achieving 9.23× and 64× higher Effective FPS at 120 views, respectively. Speedups are computed from unrounded target-time latency.</figcaption>
+        </figure>
+      </section>
+
+      <section id="abstract" class="paper-section">
+        <h2>Abstract</h2>
+        <p>Feed-forward latent novel view synthesis (NVS) has recently emerged as a promising paradigm for direct inference from source images without per-scene optimization. However, its scalability is constrained by the growing scene-token context, which increases rendering latency and memory consumption as the number of source views grows. A natural solution is to compress the source context under a fixed rendering budget. Yet allocating this budget before the target camera is known is inherently target agnostic, even though different target views may rely on different source evidence. In this work, we introduce TACC, a target-aware compression framework that decouples reusable source-side organization from target-conditioned evidence allocation. TACC organizes each source view into a progressive Carrier hierarchy and, at target time, allocates a fixed token budget based on source-target geometric relevance to read the corresponding frontiers. The resulting tokens form a compact target-conditioned representation. Only the Carrier module is trained, while the pretrained NVS backbone remains frozen. Experiments spanning three NVS backbones and two datasets show that TACC consistently improves reconstruction quality over matched-budget compression baselines while maintaining stable target-time throughput as the number of source views increases, and achieves up to 64× higher target-time Effective FPS than frozen Full Context inference at 120 source views.</p>
+      </section>
+
+      <section id="method" class="paper-section">
+        <h2>Method</h2>
+        <figure class="project-figure">
+          <img src="./assets/tacc-method-overview.png" alt="Overview of TACC for feed-forward latent novel view synthesis" />
+          <figcaption><strong>Overview of TACC for feed-forward latent NVS.</strong> Source representations are organized into reusable progressive Carrier hierarchies, from which target-aware allocation reads per-view frontiers under a fixed decoder-visible budget to form <em>Z<sub>t</sub></em>.</figcaption>
+        </figure>
+        <p>TACC follows an <em>encode once, allocate on demand</em> principle. Before a target view is specified, TACC organizes each source-view representation into a progressive Carrier hierarchy that supports multiple readout granularities and can be reused across targets. At target time, TACC estimates source-target geometric relevance, preserves the highest-relevance source view at full granularity, and allocates the remaining token budget across the support views. It then reads the corresponding per-view frontiers and concatenates them into a compact target-conditioned representation that is passed to the unchanged rendering pathway.</p>
+      </section>
+
+      <section id="comparison" class="paper-section">
+        <h2>Comparison Experiments</h2>
+        <p>Within each setting, all methods use identical scene IDs and source/target view indices. Compressed methods are matched to the same decoder-visible token budget. Drag each vertical divider to compare the backbone and its TACC variant at the same frame.</p>
+
+        <div class="comparison-overview-grid">
+          <div class="comparison-card interactive-comparison" data-video-path="lagernvs" data-scenes="3">
+            <h3>LagerNVS on DL3DV</h3>
+            <div class="wipe-compare" style="--split: 50%">
+              <video class="compare-video compare-tacc" autoplay muted playsinline preload="metadata" src="./assets/videos/lagernvs/scene-1-tacc.mp4"></video>
+              <video class="compare-video compare-origin" autoplay muted playsinline preload="metadata" src="./assets/videos/lagernvs/scene-1-origin.mp4"></video>
+              <span class="compare-label compare-label-left">LagerNVS</span>
+              <span class="compare-label compare-label-right">LagerNVS + TACC</span>
+              <span class="compare-divider" aria-hidden="true"></span>
+              <input class="wipe-range" type="range" min="0" max="100" value="50" aria-label="Move the LagerNVS comparison divider" />
+            </div>
+            <div class="scene-slots comparison-scenes" aria-label="Choose a LagerNVS DL3DV scene">
+              <button class="active" type="button" data-scene="1">Scene 1</button><button type="button" data-scene="2">Scene 2</button><button type="button" data-scene="3">Scene 3</button>
+            </div>
+          </div>
+
+          <div class="comparison-card interactive-comparison" data-video-path="lvsm-re10k" data-scenes="3">
+            <h3>LVSM on RealEstate10K</h3>
+            <div class="wipe-compare" style="--split: 50%">
+              <video class="compare-video compare-tacc" autoplay muted playsinline preload="metadata" src="./assets/videos/lvsm-re10k/scene-1-tacc.mp4"></video>
+              <video class="compare-video compare-origin" autoplay muted playsinline preload="metadata" src="./assets/videos/lvsm-re10k/scene-1-origin.mp4"></video>
+              <span class="compare-label compare-label-left">LVSM</span>
+              <span class="compare-label compare-label-right">LVSM + TACC</span>
+              <span class="compare-divider" aria-hidden="true"></span>
+              <input class="wipe-range" type="range" min="0" max="100" value="50" aria-label="Move the LVSM RE10K comparison divider" />
+            </div>
+            <div class="scene-slots comparison-scenes" aria-label="Choose an LVSM RE10K scene">
+              <button class="active" type="button" data-scene="1">Scene 1</button><button type="button" data-scene="2">Scene 2</button><button type="button" data-scene="3">Scene 3</button>
+            </div>
+          </div>
+
+          <div class="comparison-card interactive-comparison" data-video-path="clift" data-scenes="4">
+            <h3>CLiFT on DL3DV</h3>
+            <div class="wipe-compare" style="--split: 50%">
+              <video class="compare-video compare-tacc" autoplay muted playsinline preload="metadata" src="./assets/videos/clift/scene-1-tacc.mp4"></video>
+              <video class="compare-video compare-origin" autoplay muted playsinline preload="metadata" src="./assets/videos/clift/scene-1-origin.mp4"></video>
+              <span class="compare-label compare-label-left">CLiFT</span>
+              <span class="compare-label compare-label-right">CLiFT + TACC</span>
+              <span class="compare-divider" aria-hidden="true"></span>
+              <input class="wipe-range" type="range" min="0" max="100" value="50" aria-label="Move the CLiFT comparison divider" />
+            </div>
+            <div class="scene-slots comparison-scenes" aria-label="Choose a CLiFT scene">
+              <button class="active" type="button" data-scene="1">Scene 1</button><button type="button" data-scene="2">Scene 2</button><button type="button" data-scene="3">Scene 3</button><button type="button" data-scene="4">Scene 4</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="result-heading">Results on DL3DV with LagerNVS</h3>
+        <p class="table-caption"><strong>Table 1:</strong> <strong>Main quantitative comparison on DL3DV with increasing source-view counts.</strong> Compression methods use a fixed <em>A</em> = 10 decoder-visible budget and identical source views within each setting; Full Context uses the complete LagerNVS representation. Color shading indicates the <span class="legend-best">best</span> and <span class="legend-second">second-best</span> reconstruction results.</p>
+        <div class="table-scroll">
+          <table class="paper-table">
+            <thead><tr><th rowspan="2">Method</th><th colspan="4">60 Source Views</th><th colspan="4">80 Source Views</th><th colspan="4">100 Source Views</th></tr><tr><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th></tr></thead>
+            <tbody>
+              <tr class="group-row"><th colspan="13">LagerNVS-based</th></tr>
+              <tr><td>Full Context</td><td class="second">26.2985</td><td class="second">0.8247</td><td class="second">0.0892</td><td>5.87</td><td class="second">25.6766</td><td class="second">0.8064</td><td class="second">0.0963</td><td>4.40</td><td class="second">25.2932</td><td class="second">0.7953</td><td class="second">0.1012</td><td>3.57</td></tr>
+              <tr><td>ToMe</td><td>20.5459</td><td>0.5706</td><td>0.3221</td><td>31.45</td><td>20.0344</td><td>0.5442</td><td>0.3548</td><td>31.43</td><td>19.7096</td><td>0.5304</td><td>0.3737</td><td>31.00</td></tr>
+              <tr><td>DivPrune</td><td>21.9794</td><td>0.6661</td><td>0.1984</td><td>30.99</td><td>21.7624</td><td>0.6560</td><td>0.2053</td><td>31.54</td><td>21.5944</td><td>0.6479</td><td>0.2106</td><td>31.07</td></tr>
+              <tr><td>ZPressor</td><td>24.2873</td><td>0.7768</td><td>0.1366</td><td>31.52</td><td>24.1568</td><td>0.7720</td><td>0.1381</td><td>31.26</td><td>24.0773</td><td>0.7684</td><td>0.1396</td><td>31.61</td></tr>
+              <tr class="ours"><td>Ours</td><td class="best">27.5815</td><td class="best">0.8691</td><td class="best">0.0792</td><td>28.02</td><td class="best">27.3415</td><td class="best">0.8649</td><td class="best">0.0791</td><td>27.95</td><td class="best">26.8787</td><td class="best">0.8523</td><td class="best">0.0833</td><td>28.12</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="result-heading">Results on RealEstate10K</h3>
+        <p class="table-caption"><strong>Table 2:</strong> <strong>RE10K comparison with increasing source-view counts.</strong> LagerNVS and LVSM Decoder-Only use matched source/target-view settings; compressed methods use a fixed <em>A</em> = 10 budget. Color shading indicates the <span class="legend-best">best</span> and <span class="legend-second">second-best</span> reconstruction results within each backbone. Eff. FPS is rounded to two decimals; speedups use unrounded target-time latency.</p>
+        <div class="table-scroll">
+          <table class="paper-table">
+            <thead><tr><th rowspan="2">Method</th><th colspan="4">80 Source Views</th><th colspan="4">100 Source Views</th><th colspan="4">120 Source Views</th></tr><tr><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th></tr></thead>
+            <tbody>
+              <tr class="group-row"><th colspan="13">LagerNVS-based</th></tr>
+              <tr><td>Full Context</td><td class="second">28.5991</td><td class="second">0.9066</td><td class="second">0.0681</td><td>4.38</td><td class="second">28.0454</td><td class="second">0.8976</td><td class="second">0.0718</td><td>3.54</td><td>27.5702</td><td>0.8890</td><td class="second">0.0754</td><td>2.97</td></tr>
+              <tr><td>ToMe</td><td>22.1035</td><td>0.7030</td><td>0.2889</td><td>31.51</td><td>21.8357</td><td>0.6915</td><td>0.3070</td><td>31.05</td><td>21.4481</td><td>0.6780</td><td>0.3276</td><td>31.50</td></tr>
+              <tr><td>DivPrune</td><td>25.1277</td><td>0.8298</td><td>0.1215</td><td>31.46</td><td>24.9600</td><td>0.8252</td><td>0.1240</td><td>31.42</td><td>24.8335</td><td>0.8217</td><td>0.1259</td><td>31.12</td></tr>
+              <tr><td>ZPressor</td><td>27.9540</td><td>0.8999</td><td>0.0854</td><td>31.28</td><td>27.7685</td><td>0.8961</td><td>0.0868</td><td>31.41</td><td class="second">27.5760</td><td class="second">0.8921</td><td>0.0882</td><td>31.20</td></tr>
+              <tr class="ours"><td>Ours</td><td class="best">30.2044</td><td class="best">0.9285</td><td class="best">0.0645</td><td>27.47</td><td class="best">29.4752</td><td class="best">0.9182</td><td class="best">0.0681</td><td>27.42</td><td class="best">28.8774</td><td class="best">0.9090</td><td class="best">0.0715</td><td>27.44</td></tr>
+              <tr class="group-row"><th colspan="13">LVSM Decoder-Only-based</th></tr>
+              <tr><td>Full Context</td><td>22.7867</td><td>0.7489</td><td>0.2134</td><td>0.33</td><td>22.4844</td><td>0.7364</td><td>0.2267</td><td>0.22</td><td>22.2624</td><td>0.7269</td><td>0.2375</td><td>0.16</td></tr>
+              <tr><td>ToMe</td><td>19.4181</td><td>0.5842</td><td>0.3874</td><td>11.25</td><td>19.1861</td><td>0.5698</td><td>0.4015</td><td>11.12</td><td>18.8588</td><td>0.5585</td><td>0.4182</td><td>11.34</td></tr>
+              <tr><td>DivPrune</td><td>20.3286</td><td>0.6110</td><td>0.3084</td><td>11.21</td><td>20.0773</td><td>0.5990</td><td>0.3233</td><td>11.29</td><td>19.9148</td><td>0.5911</td><td>0.3338</td><td>11.10</td></tr>
+              <tr><td>ZPressor</td><td class="second">27.8870</td><td class="second">0.8883</td><td class="second">0.1047</td><td>11.17</td><td class="second">27.8993</td><td class="second">0.8885</td><td class="second">0.1045</td><td>11.28</td><td class="second">27.9235</td><td class="second">0.8890</td><td class="second">0.1041</td><td>11.25</td></tr>
+              <tr class="ours"><td>Ours</td><td class="best">30.2851</td><td class="best">0.9260</td><td class="best">0.0739</td><td>10.28</td><td class="best">30.1978</td><td class="best">0.9250</td><td class="best">0.0744</td><td>10.15</td><td class="best">30.1441</td><td class="best">0.9243</td><td class="best">0.0750</td><td>10.03</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="result-heading">Results on DL3DV with CLiFT</h3>
+        <p class="table-caption"><strong>Table 3:</strong> <strong>Comparison on CLiFT on DL3DV with increasing source-view counts.</strong> Compressed variants use a fixed <em>A</em> = 6 budget; Full Context uses the complete representation. Color shading indicates the <span class="legend-best">best</span> and <span class="legend-second">second-best</span> reconstruction results.</p>
+        <div class="table-scroll">
+          <table class="paper-table">
+            <thead><tr><th rowspan="2">Method</th><th colspan="4">24 Source Views</th><th colspan="4">36 Source Views</th><th colspan="4">48 Source Views</th></tr><tr><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th><th>PSNR ↑</th><th>SSIM ↑</th><th>LPIPS ↓</th><th>Eff. FPS ↑</th></tr></thead>
+            <tbody>
+              <tr class="group-row"><th colspan="13">CLiFT-based</th></tr>
+              <tr><td>Full Context</td><td>20.1825</td><td>0.5962</td><td>0.2912</td><td>15.43</td><td>20.1843</td><td>0.5940</td><td>0.2992</td><td>10.64</td><td>20.1703</td><td>0.5930</td><td>0.3014</td><td>8.08</td></tr>
+              <tr><td>Native</td><td>19.9137</td><td>0.5764</td><td>0.3070</td><td>47.33</td><td>19.8713</td><td>0.5719</td><td>0.3137</td><td>47.46</td><td>19.8664</td><td>0.5718</td><td>0.3142</td><td>47.08</td></tr>
+              <tr><td>ToMe</td><td>19.4351</td><td>0.5367</td><td>0.3850</td><td>47.27</td><td>19.3258</td><td>0.5292</td><td>0.3963</td><td>47.19</td><td>18.7800</td><td>0.5031</td><td>0.4332</td><td>47.40</td></tr>
+              <tr><td>DivPrune</td><td>19.4529</td><td>0.5515</td><td>0.3264</td><td>47.21</td><td>19.3823</td><td>0.5437</td><td>0.3371</td><td>47.13</td><td>19.3468</td><td>0.5411</td><td>0.3407</td><td>47.09</td></tr>
+              <tr><td>ZPressor</td><td class="second">20.9791</td><td class="second">0.6344</td><td class="second">0.2814</td><td>47.43</td><td class="second">21.0250</td><td class="second">0.6348</td><td class="second">0.2825</td><td>47.43</td><td class="second">20.9394</td><td class="second">0.6307</td><td class="second">0.2855</td><td>47.27</td></tr>
+              <tr class="ours"><td>Ours</td><td class="best">23.3425</td><td class="best">0.7397</td><td class="best">0.2180</td><td>46.37</td><td class="best">23.5100</td><td class="best">0.7441</td><td class="best">0.2165</td><td>45.20</td><td class="best">23.5842</td><td class="best">0.7470</td><td class="best">0.2149</td><td>43.18</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="analysis" class="paper-section">
+        <h2>Analysis Experiments</h2>
+
+        <h3>Amortized End-to-End Throughput</h3>
+        <figure class="project-figure analysis-figure">
+          <img src="./assets/tacc-e2e-fps.png" alt="E2E FPS of Full Context and TACC as the number of rendered target views increases" />
+          <figcaption><strong>Figure 9:</strong> Amortized end-to-end throughput across multiple target views. We evaluate LagerNVS on DL3DV with 60 source views, with TACC using a fixed <em>A</em> = 10 decoder-visible budget. Source-side processing is performed once per source set and amortized over all rendered target views; TACC additionally includes the one-time Carrier construction cost.</figcaption>
+        </figure>
+        <p>End-to-end throughput is measured over the complete model computation for each scene, excluding disk loading and image decoding. Source encoding is performed once per source set for both methods, while TACC additionally constructs the Carrier hierarchy once and reuses it across all subsequent target views. The one-time Carrier construction cost is not fully amortized at 10 target views, where TACC is slightly slower than Full Context. TACC overtakes Full Context by 40 target views; at 100 target views, TACC reaches 8.77 E2E FPS compared with 4.42 FPS for Full Context, corresponding to a 1.99× end-to-end speedup.</p>
+
+        <h3>Memory Analysis under Dense Source Views</h3>
+        <p class="table-caption"><strong>Table 12:</strong> Peak GPU memory at 120 source views on RE10K. Full Context and TACC are profiled under the same inference scope. TACC uses a fixed <em>A</em> = 10 decoder-visible budget.</p>
+        <div class="table-scroll memory-table-wrap">
+          <table class="paper-table memory-table">
+            <thead><tr><th>Backbone</th><th>Method</th><th>Peak Alloc. (GiB) ↓</th><th>Reduction</th></tr></thead>
+            <tbody>
+              <tr><td rowspan="2">LagerNVS</td><td>Full Context</td><td>20.05</td><td>–</td></tr>
+              <tr class="ours"><td>TACC</td><td>8.45</td><td>57.84%</td></tr>
+              <tr class="group-start"><td rowspan="2">LVSM Decoder-Only</td><td>Full Context</td><td>12.77</td><td>–</td></tr>
+              <tr class="ours"><td>TACC</td><td>4.22</td><td>66.96%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>TACC reduces peak allocated GPU memory from 20.05 to 8.45 GiB on LagerNVS and from 12.77 to 4.22 GiB on LVSM Decoder-Only, corresponding to reductions of 57.84% and 66.96%, respectively. Under the same inference scope, TACC therefore reduces both target-time computation and peak allocated GPU memory in the dense-source-view setting.</p>
+      </section>
+
+      <section id="resources" class="paper-section resources-section">
+        <h2>Resources</h2>
+        <div class="resource-status"><span><strong>Paper</strong> Coming soon</span><span><strong>Code</strong> Private draft</span><span><strong>Videos</strong> All comparisons ready</span></div>
+      </section>
+    </main>
+
+    <footer>Anonymous TACC project page · local preview</footer>
+    <script src="./app.js"></script>
+  </body>
+</html>
