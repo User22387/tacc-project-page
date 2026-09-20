@@ -11,9 +11,9 @@ This is a local static draft modeled on the section order, dimensions, spacing, 
 - Three interactive comparison players with synchronized backbone/TACC videos and draggable vertical dividers: LagerNVS on DL3DV (three scenes), LVSM Decoder-Only on RealEstate10K (three scenes), and CLiFT on DL3DV (four scenes).
 - Every comparison is encoded at 15 FPS and loops automatically without playback controls or a progress bar.
 - Full Tables 1–3 with PSNR, SSIM, LPIPS, and target-time Effective FPS.
-- Analysis section with Figure 9 E2E FPS and Table 12 peak GPU memory.
+- Analysis section with Figure 10 E2E FPS and Figure 5 LVSM efficiency scaling.
 
-The page content was checked against the current anonymous manuscript on 2026-09-19. Recheck every claim, number, caption, and exported figure whenever the manuscript changes.
+The page content was checked against the current anonymous manuscript on 2026-09-20. Recheck every claim, number, caption, and exported figure whenever the manuscript changes.
 
 ## Preview
 

@@ -158,24 +158,16 @@
         <h3>Amortized End-to-End Throughput</h3>
         <figure class="project-figure analysis-figure">
           <img src="./assets/tacc-e2e-fps.png" alt="E2E FPS of Full Context and TACC as the number of rendered target views increases" />
-          <figcaption><strong>Figure 9:</strong> Amortized end-to-end throughput across multiple target views. We evaluate LagerNVS on DL3DV with 60 source views, with TACC using a fixed <em>A</em> = 10 decoder-visible budget. Source-side processing is performed once per source set and amortized over all rendered target views; TACC additionally includes the one-time Carrier construction cost.</figcaption>
+          <figcaption><strong>Figure 10:</strong> Amortized end-to-end throughput across multiple target views. We evaluate LagerNVS on DL3DV with 60 source views, with TACC using a fixed <em>A</em> = 10 decoder-visible budget. Source-side processing is performed once per source set and amortized over all rendered target views; TACC additionally includes the one-time Carrier construction cost.</figcaption>
         </figure>
         <p>End-to-end throughput is measured over the complete model computation for each scene, excluding disk loading and image decoding. Source encoding is performed once per source set for both methods, while TACC additionally constructs the Carrier hierarchy once and reuses it across all subsequent target views. The one-time Carrier construction cost is not fully amortized at 10 target views, where TACC is slightly slower than Full Context. TACC overtakes Full Context by 40 target views; at 100 target views, TACC reaches 8.77 E2E FPS compared with 4.42 FPS for Full Context, corresponding to a 1.99× end-to-end speedup.</p>
 
-        <h3>Memory Analysis under Dense Source Views</h3>
-        <p class="table-caption"><strong>Table 12:</strong> Peak GPU memory at 120 source views on RE10K. Full Context and TACC are profiled under the same inference scope. TACC uses a fixed <em>A</em> = 10 decoder-visible budget.</p>
-        <div class="table-scroll memory-table-wrap">
-          <table class="paper-table memory-table">
-            <thead><tr><th>Backbone</th><th>Method</th><th>Peak Alloc. (GiB) ↓</th><th>Reduction</th></tr></thead>
-            <tbody>
-              <tr><td rowspan="2">LagerNVS</td><td>Full Context</td><td>20.05</td><td>–</td></tr>
-              <tr class="ours"><td>TACC</td><td>8.45</td><td>57.84%</td></tr>
-              <tr class="group-start"><td rowspan="2">LVSM Decoder-Only</td><td>Full Context</td><td>12.77</td><td>–</td></tr>
-              <tr class="ours"><td>TACC</td><td>4.22</td><td>66.96%</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p>TACC reduces peak allocated GPU memory from 20.05 to 8.45 GiB on LagerNVS and from 12.77 to 4.22 GiB on LVSM Decoder-Only, corresponding to reductions of 57.84% and 66.96%, respectively. Under the same inference scope, TACC therefore reduces both target-time computation and peak allocated GPU memory in the dense-source-view setting.</p>
+        <h3>Efficiency Analysis of LVSM Decoder-Only</h3>
+        <figure class="project-figure efficiency-figure">
+          <img src="./assets/tacc-figure5-efficiency.png" alt="Peak GPU memory and renderer latency of LVSM Decoder-Only and LVSM with TACC across 15 to 120 input views" />
+          <figcaption><strong>Figure 5:</strong> Efficiency analysis of LVSM Decoder-Only. Peak GPU memory (left) and renderer latency (right).</figcaption>
+        </figure>
+        <p>We additionally measure renderer latency and peak allocated GPU memory across 15–120 source views. As shown in Figure 5, Full Context incurs increasing rendering and memory costs as the source context grows. In contrast, TACC maintains nearly constant renderer latency and substantially slower memory growth under the fixed <em>A</em> = 10 budget. At 120 source views, TACC reduces peak allocated GPU memory from 12.77 to 4.22 GiB, a 66.96% reduction. Additional reconstruction and throughput results across 15–120 source views are provided in Appendix B.2.</p>
       </section>
 
       <section id="resources" class="paper-section resources-section">
