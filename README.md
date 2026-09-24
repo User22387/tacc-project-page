@@ -14,7 +14,7 @@ This is a local static draft modeled on the section order, dimensions, spacing, 
 - Analysis section with the updated Figure 5 efficiency/E2E overview and Figure 7 LVSM dense-context scaling result.
 - Code links point to the anonymous GitHub repository at `https://github.com/User22387/tacc`.
 
-The page content was checked against the current anonymous manuscript on 2026-09-20. Recheck every claim, number, caption, and exported figure whenever the manuscript changes.
+The page content was checked against the current anonymous manuscript on 2026-09-24. Recheck every claim, number, caption, and exported figure whenever the manuscript changes.
 
 ## Preview
 
