@@ -16,7 +16,7 @@
         <p class="affiliation">Paper under double-blind review</p>
         <nav class="resource-buttons" aria-label="Project resources">
           <span class="resource-button">▰ Paper <small>coming soon</small></span>
-          <span class="resource-button">⌨ Code <small>private draft</small></span>
+          <a class="resource-button" href="https://github.com/User22387/tacc" target="_blank" rel="noopener noreferrer">⌨ Code <small>GitHub</small></a>
         </nav>
       </div>
     </header>
@@ -155,28 +155,28 @@
       <section id="analysis" class="paper-section">
         <h2>Analysis Experiments</h2>
 
-        <h3>Amortized End-to-End Throughput</h3>
-        <figure class="project-figure analysis-figure">
-          <img src="./assets/tacc-e2e-fps.png" alt="E2E FPS of Full Context and TACC as the number of rendered target views increases" />
-          <figcaption><strong>Figure 10:</strong> Amortized end-to-end throughput across multiple target views. We evaluate LagerNVS on DL3DV with 60 source views, with TACC using a fixed <em>A</em> = 10 decoder-visible budget. Source-side processing is performed once per source set and amortized over all rendered target views; TACC additionally includes the one-time Carrier construction cost.</figcaption>
-        </figure>
-        <p>End-to-end throughput is measured over the complete model computation for each scene, excluding disk loading and image decoding. Source encoding is performed once per source set for both methods, while TACC additionally constructs the Carrier hierarchy once and reuses it across all subsequent target views. The one-time Carrier construction cost is not fully amortized at 10 target views, where TACC is slightly slower than Full Context. TACC overtakes Full Context by 40 target views; at 100 target views, TACC reaches 8.77 E2E FPS compared with 4.42 FPS for Full Context, corresponding to a 1.99× end-to-end speedup.</p>
-
-        <h3>Efficiency Analysis of LVSM Decoder-Only</h3>
+        <h3>Efficiency and Amortized End-to-End Throughput</h3>
         <figure class="project-figure efficiency-figure">
-          <img src="./assets/tacc-figure5-efficiency.png" alt="Peak GPU memory and renderer latency of LVSM Decoder-Only and LVSM with TACC across 15 to 120 input views" />
-          <figcaption><strong>Figure 5:</strong> Efficiency analysis of LVSM Decoder-Only. Peak GPU memory (left) and renderer latency (right).</figcaption>
+          <img src="./assets/tacc-figure5-efficiency-e2e.png" alt="LVSM peak GPU memory and renderer latency across increasing input views, together with LagerNVS end-to-end throughput across increasing target views" />
+          <figcaption><strong>Figure 5:</strong> <strong>Efficiency and amortized E2E throughput.</strong> LVSM peak GPU memory (left) and renderer latency (center) on RE10K across 15–120 source views; LagerNVS E2E FPS (right) on DL3DV with 80 source views and increasing target counts.</figcaption>
         </figure>
-        <p>We additionally measure renderer latency and peak allocated GPU memory across 15–120 source views. As shown in Figure 5, Full Context incurs increasing rendering and memory costs as the source context grows. In contrast, TACC maintains nearly constant renderer latency and substantially slower memory growth under the fixed <em>A</em> = 10 budget. At 120 source views, TACC reduces peak allocated GPU memory from 12.77 to 4.22 GiB, a 66.96% reduction. Additional reconstruction and throughput results across 15–120 source views are provided in Appendix B.2.</p>
+        <p>TACC changes how inference scales with dense context. Under LVSM Decoder-Only, its fixed <em>A</em> = 10 readout keeps renderer latency nearly independent of the number of source views and limits memory growth, while Full Context becomes progressively more expensive. At 120 views, peak allocated memory falls from 12.77 to 4.22 GiB, a 66.96% reduction. The reusable source-side hierarchy also amortizes across targets: although its one-time construction cost makes TACC slightly slower at 10 targets, it overtakes Full Context by 40 targets and reaches a 1.98× E2E throughput gain at 100. These trends show that TACC improves the scaling behavior of the frozen backbone rather than merely reducing a single-stage runtime.</p>
+
+        <h3>Dense-Context Scaling with LVSM Decoder-Only</h3>
+        <figure class="project-figure scaling-figure">
+          <img src="./assets/tacc-figure7-lvsm-scaling.png" alt="PSNR and Effective FPS of Full Context and TACC as the number of source views increases from 15 to 120" />
+          <figcaption><strong>Figure 7:</strong> <strong>LVSM Decoder-Only with increasing source views.</strong> PSNR (left) and Effective FPS (right) on RE10K across 15–120 source views. TACC uses a fixed <em>A</em> = 10 decoder-visible budget, whereas Full Context processes all selected source tokens.</figcaption>
+        </figure>
+        <p>A fixed decoder-visible budget allows TACC to benefit from additional observations without exposing the renderer to an ever-growing token sequence. Reconstruction quality rises through 40 source views and then remains close to 30 dB, while Effective FPS stays near 10 across the full range. The frozen Full Context model follows the opposite trend: both quality and throughput decline as its input expands. This regime is deliberately demanding—LVSM is pretrained with two source views, whereas the 120-view setting presents 60× more views and 122,880 source patch tokens. The comparison therefore tests robustness to dense-context shift in the frozen backbone and indicates that more observations become useful when target-relevant evidence is allocated selectively.</p>
       </section>
 
       <section id="resources" class="paper-section resources-section">
         <h2>Resources</h2>
-        <div class="resource-status"><span><strong>Paper</strong> Coming soon</span><span><strong>Code</strong> Private draft</span><span><strong>Videos</strong> All comparisons ready</span></div>
+        <div class="resource-status"><span><strong>Paper</strong> Coming soon</span><a href="https://github.com/User22387/tacc" target="_blank" rel="noopener noreferrer"><strong>Code</strong> GitHub repository</a><span><strong>Videos</strong> All comparisons ready</span></div>
       </section>
     </main>
 
-    <footer>Anonymous TACC project page · local preview</footer>
+    <footer>Anonymous TACC project page</footer>
     <script src="./app.js"></script>
   </body>
 </html>
