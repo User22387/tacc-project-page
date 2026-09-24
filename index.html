@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="TACC: Target-Aware Carrier Compression for Scalable Novel View Synthesis. Anonymous project page." />
+    <meta name="description" content="TACC: Target-Aware Carrier Compression for Dense-Context Novel View Synthesis. Anonymous project page." />
     <title>TACC: Target-Aware Carrier Compression</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="jumbotron">
       <div class="hero-content">
-        <h1><span class="accent">TACC:</span> <span class="accent-blue">Target-Aware Carrier Compression</span> for<br /><span class="accent-pink">Scalable</span> Novel View Synthesis</h1>
+        <h1><span class="accent">TACC:</span> <span class="accent-blue">Target-Aware Carrier Compression</span> for<br /><span class="accent-pink">Dense-Context</span> Novel View Synthesis</h1>
         <hr />
         <p class="authors">Anonymous authors</p>
         <p class="affiliation">Paper under double-blind review</p>
@@ -24,16 +24,16 @@
     <main class="page-content">
       <section id="tldr" class="paper-section">
         <h2>TL;DR</h2>
-        <p>TACC decouples reusable source-side Carrier organization from target-conditioned evidence allocation for scalable feed-forward latent novel view synthesis.</p>
+        <p>TACC organizes dense source context once, then allocates a fixed decoder-visible budget to target-relevant evidence for each requested view.</p>
         <figure class="project-figure">
           <img src="./assets/tacc-figure1.png" alt="TACC teaser showing target-aware Carrier readout and target-time scaling on LagerNVS and LVSM" />
-          <figcaption><strong>Figure 1:</strong> TACC organizes source representations into reusable per-view Carrier frontiers and performs target-aware readout under a fixed decoder-visible budget once the target becomes available. Across LagerNVS and LVSM, TACC maintains efficient target-time rendering as the number of source views increases, achieving 9.23× and 64× higher Effective FPS at 120 views, respectively. Speedups are computed from unrounded target-time latency.</figcaption>
+          <figcaption><strong>Figure 1:</strong> TACC organizes source representations into reusable per-view Carrier frontiers and performs target-aware readout under a fixed decoder-visible budget once the target becomes available. Across LagerNVS and LVSM on RE10K, TACC maintains efficient target-time rendering as the number of source views increases, achieving 9.23× and 64× higher Effective FPS at 120 views, respectively. Speedups are computed from unrounded target-time latency.</figcaption>
         </figure>
       </section>
 
       <section id="abstract" class="paper-section">
         <h2>Abstract</h2>
-        <p>Feed-forward latent novel view synthesis (NVS) has recently emerged as a promising paradigm for direct inference from source images without per-scene optimization. However, its scalability is constrained by the growing scene-token context, which increases rendering latency and memory consumption as the number of source views grows. A natural solution is to compress the source context under a fixed rendering budget. Yet allocating this budget before the target camera is known is inherently target agnostic, even though different target views may rely on different source evidence. In this work, we introduce TACC, a target-aware compression framework that decouples reusable source-side organization from target-conditioned evidence allocation. TACC organizes each source view into a progressive Carrier hierarchy and, at target time, allocates a fixed token budget based on source-target geometric relevance to read the corresponding frontiers. The resulting tokens form a compact target-conditioned representation. Only the Carrier module is trained, while the pretrained NVS backbone remains frozen. Experiments spanning three NVS backbones and two datasets show that TACC consistently improves reconstruction quality over matched-budget compression baselines while maintaining stable target-time throughput as the number of source views increases, and achieves up to 64× higher target-time Effective FPS than frozen Full Context inference at 120 source views.</p>
+        <p>Feed-forward latent novel view synthesis (NVS) has recently emerged as a promising paradigm for direct inference from source images without per-scene optimization. However, increasing the number of source views enlarges the scene-token context, raising rendering latency and memory consumption. A natural solution is to compress the source context under a fixed rendering budget. Yet allocating this budget before the target camera is known is inherently target agnostic, even though different target views may rely on different source evidence. In this work, we introduce TACC, a target-aware compression module for dense-context latent NVS. TACC organizes each source view into a reusable progressive Carrier hierarchy and, at target time, assigns exact integer quotas to source views under a fixed decoder-visible token budget based on source-target geometric relevance. It then reads the corresponding spatially covering frontiers to form a compact target-conditioned representation. On RE10K with 120 source views, integrating TACC into LagerNVS and LVSM Decoder-Only yields 9.23× and 64× higher target-time throughput, respectively, compared with their uncompressed counterparts.</p>
       </section>
 
       <section id="method" class="paper-section">
@@ -160,14 +160,14 @@
           <img src="./assets/tacc-figure5-efficiency-e2e.png" alt="LVSM peak GPU memory and renderer latency across increasing input views, together with LagerNVS end-to-end throughput across increasing target views" />
           <figcaption><strong>Figure 5:</strong> <strong>Efficiency and amortized E2E throughput.</strong> LVSM peak GPU memory (left) and renderer latency (center) on RE10K across 15–120 source views; LagerNVS E2E FPS (right) on DL3DV with 80 source views and increasing target counts.</figcaption>
         </figure>
-        <p>TACC changes how inference scales with dense context. Under LVSM Decoder-Only, its fixed <em>A</em> = 10 readout keeps renderer latency nearly independent of the number of source views and limits memory growth, while Full Context becomes progressively more expensive. At 120 views, peak allocated memory falls from 12.77 to 4.22 GiB, a 66.96% reduction. The reusable source-side hierarchy also amortizes across targets: although its one-time construction cost makes TACC slightly slower at 10 targets, it overtakes Full Context by 40 targets and reaches a 1.98× E2E throughput gain at 100. These trends show that TACC improves the scaling behavior of the frozen backbone rather than merely reducing a single-stage runtime.</p>
+        <p>With LVSM Decoder-Only, Full Context incurs increasing renderer latency and peak allocated GPU memory as the source context grows, whereas TACC keeps renderer latency nearly constant and slows memory growth through its fixed <em>A</em> = 10 decoder-visible budget. At 120 source views, TACC reduces peak allocated memory from 12.77 to 4.22 GiB, a 66.96% reduction. The LagerNVS end-to-end results show the complementary amortization behavior: TACC is slightly slower at 10 target views because Carrier construction is paid once per source set, surpasses Full Context by 40 targets, and reaches a 1.98× throughput gain at 100 targets.</p>
 
         <h3>Dense-Context Scaling with LVSM Decoder-Only</h3>
         <figure class="project-figure scaling-figure">
           <img src="./assets/tacc-figure7-lvsm-scaling.png" alt="PSNR and Effective FPS of Full Context and TACC as the number of source views increases from 15 to 120" />
           <figcaption><strong>Figure 7:</strong> <strong>LVSM Decoder-Only with increasing source views.</strong> PSNR (left) and Effective FPS (right) on RE10K across 15–120 source views. TACC uses a fixed <em>A</em> = 10 decoder-visible budget, whereas Full Context processes all selected source tokens.</figcaption>
         </figure>
-        <p>A fixed decoder-visible budget allows TACC to benefit from additional observations without exposing the renderer to an ever-growing token sequence. Reconstruction quality rises through 40 source views and then remains close to 30 dB, while Effective FPS stays near 10 across the full range. The frozen Full Context model follows the opposite trend: both quality and throughput decline as its input expands. This regime is deliberately demanding—LVSM is pretrained with two source views, whereas the 120-view setting presents 60× more views and 122,880 source patch tokens. The comparison therefore tests robustness to dense-context shift in the frozen backbone and indicates that more observations become useful when target-relevant evidence is allocated selectively.</p>
+        <p>TACC's reconstruction quality increases up to 40 source views and remains nearly stable thereafter, with little variation in Effective FPS. In contrast, the frozen Full Context model loses both reconstruction quality and target-time throughput as its source context grows. At 120 views, TACC reaches 30.14 dB PSNR versus 22.26 dB for Full Context while maintaining the fixed decoder-visible budget. This setting is a substantial shift from LVSM's two-view pretraining regime: the 120-view evaluation uses 60× more source views and exposes 122,880 source patch tokens at 256 × 256 resolution. The comparison therefore measures the frozen backbone under dense source input rather than a model retrained for long contexts.</p>
       </section>
 
       <section id="resources" class="paper-section resources-section">
