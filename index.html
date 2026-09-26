@@ -39,7 +39,7 @@
       <section id="method" class="paper-section">
         <h2>Method</h2>
         <figure class="project-figure">
-          <img src="./assets/tacc-method-overview.png" alt="Overview of TACC for feed-forward latent novel view synthesis" />
+          <img src="./assets/tacc-method-overview.png?v=20260926-camera-direction" alt="Overview of TACC for feed-forward latent novel view synthesis" />
           <figcaption><strong>Overview of TACC for feed-forward latent NVS.</strong> Source representations are organized into reusable progressive Carrier hierarchies, from which target-aware allocation reads per-view frontiers under a fixed decoder-visible budget to form <em>Z<sub>t</sub></em>.</figcaption>
         </figure>
         <p>TACC follows an <em>encode once, allocate on demand</em> principle. Before a target view is specified, TACC organizes each source-view representation into a progressive Carrier hierarchy that supports multiple readout granularities and can be reused across targets. At target time, TACC estimates source-target geometric relevance, preserves the highest-relevance source view at full granularity, and allocates the remaining token budget across the support views. It then reads the corresponding per-view frontiers and concatenates them into a compact target-conditioned representation that is passed to the unchanged rendering pathway.</p>
